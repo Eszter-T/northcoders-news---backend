@@ -5,7 +5,7 @@ const {
   userData,
 } = require("../data/index.js");
 
-const { changeTimeStamp } = require("../utils/data-manipulation");
+const { changeTimeStamp,  createRefObj, switchKeyRef } = require("../utils/data-manipulation");
 
 exports.seed = function (knex) {
   // add seeding functionality here
@@ -22,7 +22,12 @@ exports.seed = function (knex) {
       const formattedArticles = changeTimeStamp(articleData, "created_at");
       return knex.insert(formattedArticles).into("articles").returning("*");
     })
-    .then((formattedArticles) => {
-      console.log(formattedArticles);
+    .then((insertedArticles) => {
+       const articleRef = createRefObj(insertedArticles, "title", "article_id");
+       const userRef = createRefObj(commentData, "created_by", "created_by")
+       let formattedComments = switchKeyRef(commentData, articleRef, "belongs_to", "article_id");
+       formattedComments = switchKeyRef(formattedComments, userRef, "created_by", "author");
+       formattedComments = changeTimeStamp(formattedComments, "created_at");
+       return knex.insert(formattedComments).into("comments").returning("*");
     });
 };

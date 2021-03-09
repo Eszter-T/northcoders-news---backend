@@ -3,7 +3,7 @@
 const changeTimeStamp = (array, key) => {
   return array.map((obj) => {
     const copyObj = { ...obj };
-    copyObj[key] = new Date(copyObj[key]).toString();
+    copyObj[key] = new Date(copyObj[key]);
     return copyObj;
   });
 };
