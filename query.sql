@@ -3,5 +3,5 @@
 SELECT * FROM topics;
 SELECT * FROM users;
 SELECT * FROM comments;
-SELECT  FROM articles;
+SELECT * FROM articles;
 

@@ -15,4 +15,4 @@ exports.down = function (knex) {
   return knex.schema.dropTable("comments");
 };
 
-// change belongs_to key to article_id
+// change belongs_to_key to article_id

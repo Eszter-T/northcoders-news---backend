@@ -3,9 +3,9 @@ const {
   articleData,
   commentData,
   userData,
-} = require('../data/index.js');
+} = require("../data/index.js");
 
-
+const { changeTimeStamp } = require("../utils/data-manipulation");
 
 exports.seed = function (knex) {
   // add seeding functionality here
@@ -13,12 +13,16 @@ exports.seed = function (knex) {
     .rollback()
     .then(() => knex.migrate.latest())
     .then(() => {
-      return knex.insert(topicData)
-      .into("topics")
-      .returning("*")
-
+      return knex.insert(topicData).into("topics").returning("*");
     })
-    .then(topicRows => {
-      console.log(topicRows)
+    .then(() => {
+      return knex.insert(userData).into("users").returning("*");
     })
+    .then(() => {
+      const formattedArticles = changeTimeStamp(articleData, "created_at");
+      return knex.insert(formattedArticles).into("articles").returning("*");
+    })
+    .then((formattedArticles) => {
+      console.log(formattedArticles);
+    });
 };

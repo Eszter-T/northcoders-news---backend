@@ -1,28 +1,33 @@
 // extract any functions you are using to manipulate your data, into this file
 
-const createRef = (list, key, value) => {
-    const refObj = {};
-  
-    list.forEach(item=>{
-      const refKey = item[key];
-      const refValue = item[value];
-      refObj[refKey] = refValue;
-  
-    });
-  
-    return refObj;
-  };
-  
-  
-const formatItem = (items, refObj, keyToChange, newKey) =>{
-  const formattedItems = items.map(item =>{
-    const formattedItem = {...item}
-      formattedItem[newKey] = refObj[formattedItem[keyToChange]]
-      delete formattedItem[keyToChange]
-      return formattedItem
-    });
-    
-  return formattedItems
+const changeTimeStamp = (array, key) => {
+  return array.map((obj) => {
+    const copyObj = { ...obj };
+    copyObj[key] = new Date(copyObj[key]).toString();
+    return copyObj;
+  });
 };
 
-module.exports = { createRef, formatItem }
+const createRefObj = (array, key, value) => {
+  const refObj = {};
+
+  array.forEach((obj) => {
+    const refObjKey = obj[key];
+    const refObjValue = obj[value];
+    refObj[refObjKey] = refObjValue;
+  });
+
+  return refObj;
+};
+const switchKeyRef = (array, refObject, keyToReplace, newKey) => {
+  const newArr = array.map((object) => {
+    const newObj = { ...object };
+    newObj[newKey] = refObject[object[keyToReplace]];
+    delete newObj[keyToReplace];
+    return newObj;
+  });
+
+  return newArr;
+};
+
+module.exports = { changeTimeStamp, createRefObj, switchKeyRef };
