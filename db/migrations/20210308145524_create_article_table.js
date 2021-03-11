@@ -1,5 +1,5 @@
 exports.up = function (knex) {
-  console.log("creating articles table");
+  
   return knex.schema.createTable("articles", (articleTable) => {
     articleTable.increments("article_id").primary();
     articleTable.string("title").notNullable();
@@ -8,11 +8,12 @@ exports.up = function (knex) {
     articleTable.string("topic").references("topics.slug");
     articleTable.string("author").references("users.username");
     articleTable.timestamp("created_at");
+    
   });
 };
 
 exports.down = function (knex) {
-  console.log("dropping articles table");
+  
   return knex.schema.dropTable("articles");
 };
 
