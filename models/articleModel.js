@@ -1,6 +1,6 @@
 const { dbConnection } = require('../db/dbConnection');
 
-exports.fetchArticles = () => {
+exports.fetchArticles = ({ sort_by }) => {
   return dbConnection
   .select(
     "articles.article_id",
@@ -15,7 +15,7 @@ exports.fetchArticles = () => {
   .from("articles")
   .leftJoin("comments", "articles.article_id", "=", "comments.article_id")
   .groupBy("articles.article_id")
-  .orderBy("title", "asc")
+  .orderBy(sort_by || "created_at")
 };
 
 exports.fetchArticleById = (article_id) => {

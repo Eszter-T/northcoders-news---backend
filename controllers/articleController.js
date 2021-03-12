@@ -1,7 +1,7 @@
 const { fetchArticleById, fetchArticles, updateArticleById } = require('../models/articleModel');
 
 exports.getArticles = (req, res, next) => {
-  fetchArticles().then((articles) => {
+  fetchArticles(req.query).then((articles) => {
       res.status(200).send({ articles });
   });
 };

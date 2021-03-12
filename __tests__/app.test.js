@@ -56,22 +56,40 @@ describe('/api', () => {
       });
     });
   });
-  describe('/articles', () => {
-    test('articles are sorted in ascending title order by default',() => {
-      return request(app)
-        .get('/api/articles')
-        .expect(200)
-        .then(({ body: {articles} }) => {
-          expect(articles).toBeSortedBy('title', 'asc');
-      });
-    });
-    test('status 200 - each article obj has comment_count property', () => {
+  describe.only('/articles', () => {
+    test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
       .get('/api/articles')
       .expect(200)
       .then(({ body: { articles }}) => {
-        expect(articles[0]).toHaveProperty('comment_count', "1");
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles).toHaveLength(12);
+        expect(articles[0]).toHaveProperty('comment_count', "0");
       });
+    });
+    test('QUERY articles are sorted by date by default',() => {
+      return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body: {articles} }) => {
+          expect(articles).toBeSortedBy('created_at');
+      });
+    });
+    test('QUERY articles can be sorted by any valid column', () => {
+      return request(app)
+      .get('/api/articles?sort_by=topic')
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(articles).toBeSortedBy('topic');
+      });
+    });
+    test('QUERY -filters the articles by author', () => {
+      return request(app)
+      .get('/api/articles?author=butter_bridge')
+      .expect(200)
+      .then(({body: {articles}}) => {
+        console.log(articles)
+      })
     });
     test('GET article by article_id, status: 200', () => {
       return request(app)
