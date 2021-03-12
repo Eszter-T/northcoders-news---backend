@@ -1,5 +1,6 @@
-const { writeCommentByArticleId } = require('../models/commentModel');
-const { fetchArticleById } = require("../models/articleModel");
+const { writeCommentByArticleId, fetchCommentsByArticleId } = require('../models/commentModel');
+const { fetchArticleById, checkArticleExists } = require("../models/articleModel");
+
 
 exports.postCommentByArticleId = (req, res, next) => {
     const { username, body } = req.body;
@@ -15,5 +16,16 @@ exports.postCommentByArticleId = (req, res, next) => {
             .then((comment) => {
                 res.status(201).send({ comment });
             });
-        });
+    });
+};
+
+exports.getCommentsByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  Promise.all([fetchCommentsByArticleId(article_id, req.query), checkArticleExists(article_id)])
+    .then(([comments]) => {
+        res.status(200).send({ comments });
+    })
+    .catch(error => { 
+        next(error)
+    });
 };

@@ -43,3 +43,17 @@ exports.updateArticleById = (article_id, inc_votes) => {
   .where("article_id", article_id)
   .increment("votes", inc_votes)
 };
+
+exports.checkArticleExists = (article_id) => {
+  return dbConnection
+  .select("*")
+  .from("articles")
+  .where({ article_id })
+  .then(([article]) => {
+    if (article === undefined) {
+      return Promise.reject({ status: 404, msg: "Article_id not found"});
+    };
+  
+  });
+
+};

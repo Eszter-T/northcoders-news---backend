@@ -56,7 +56,7 @@ describe('/api', () => {
       });
     });
   });
-  describe.only('/articles', () => {
+  describe('/articles', () => {
     test('articles are sorted in ascending title order by default',() => {
       return request(app)
         .get('/api/articles')
@@ -70,7 +70,6 @@ describe('/api', () => {
       .get('/api/articles')
       .expect(200)
       .then(({ body: { articles }}) => {
-        //console.log(articles)
         expect(articles[0]).toHaveProperty('comment_count', "1");
       });
     });
@@ -79,7 +78,6 @@ describe('/api', () => {
       .get('/api/articles/1')
       .expect(200)
       .then(({body: { article }}) => {
-        //console.log(article)
         expect(Array.isArray(article)).toBe(true);
         expect(article[0]).toMatchObject(
           {
@@ -140,6 +138,64 @@ describe('/api', () => {
             votes: 0
           }
         );
+      });
+    });
+    test('GET responds with an array of comments for the given article', () => {
+      return request(app)
+      .get('/api/articles/5/comments')
+      .expect(200)
+      .then(({ body: { comments } }) => {
+        expect(Array.isArray(comments)).toBe(true);
+        expect(comments).toHaveLength(2);
+        expect(comments[0]).toMatchObject(
+          {
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String)
+          }
+        );
+      });
+    });
+    test('GET handles articles with no comments', () => {
+      return request(app)
+      .get('/api/articles/2/comments')
+      .expect(200)
+      .then(({ body: { comments }}) => {
+        expect(comments).toHaveLength(0);
+      });
+    });
+    test('comments are sorted by created_at by default',() => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body: { comments }}) => {
+          expect(comments).toBeSortedBy('created_at');
+      });
+    });
+    test('QUERY comments are sorted by author', () => {
+      return request(app)
+      .get('/api/articles/1/comments?sort_by=author')
+      .expect(200)
+      .then(({body: {comments}}) => {
+        expect(comments).toBeSortedBy('author');
+      });
+    });
+    xtest('QUERY comments ordered in descending order by default', () => {
+      return request(app)
+      .get('/api/articles/1/comments?order=descending')
+      .expect(200)
+      .then(({body: {comments}}) => {
+        expect(comments).toBeSortedBy('author', 'desc')
+      });
+    });
+    test('Status 404: article_id valid but non-existent', () => {
+      return request(app)
+      .get('/api/articles/999/comments')
+      .expect(404)
+      .then(({body: {msg}}) => {
+        expect(msg).toBe('Article_id not found');
       });
     });
   });
