@@ -8,7 +8,7 @@ const {
 const { changeTimeStamp,  createRefObj, switchKeyRef } = require("../utils/data-manipulation");
 
 exports.seed = function (knex) {
-  // add seeding functionality here
+ 
   return knex.migrate
     .rollback()
     .then(() => knex.migrate.latest())

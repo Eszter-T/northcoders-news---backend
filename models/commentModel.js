@@ -7,14 +7,13 @@ exports.writeCommentByArticleId = (username, body, article_id) => {
         author: username,
         created_at: new Date()
       }
-      console.log(comment)
   return dbConnection("comments")
   .insert(comment)
   .returning("*")
 };
 
 
-exports.fetchCommentsByArticleId = (article_id, { sort_by }) => {
+exports.fetchCommentsByArticleId = (article_id, { sort_by, order}) => {
   return dbConnection
   .select(
     "comment_id",
@@ -26,6 +25,27 @@ exports.fetchCommentsByArticleId = (article_id, { sort_by }) => {
   )
   .from("comments")
   .where("article_id", article_id)
-  .orderBy(sort_by || "created_at")
+  .orderBy(sort_by || "created_at", order || "desc")
 
+};
+
+exports.updateCommentById = (comment_id, inc_votes) => {
+  return dbConnection
+  .from("comments")
+  .where("comment_id", comment_id)
+  .increment("votes", inc_votes)
+};
+
+exports.fetchCommentById = (comment_id) => {
+  return dbConnection
+  .select(
+    "comment_id",
+    "author",
+    "article_id",
+    "votes",
+    "created_at",
+    "body"
+  )
+  .from("comments")
+  .where("comment_id", comment_id)
 };

@@ -1,7 +1,7 @@
 const { dbConnection } = require('../db/dbConnection');
 
-exports.fetchArticles = ({ sort_by }) => {
-  return dbConnection
+exports.fetchArticles = ({ sort_by, order, author = null, topic = null}) => {
+  let query = dbConnection
   .select(
     "articles.article_id",
     "articles.title",
@@ -13,9 +13,17 @@ exports.fetchArticles = ({ sort_by }) => {
   )
   .count("comments.comment_id as comment_count")
   .from("articles")
-  .leftJoin("comments", "articles.article_id", "=", "comments.article_id")
-  .groupBy("articles.article_id")
-  .orderBy(sort_by || "created_at")
+  .leftJoin("comments", "articles.article_id", "=", "comments.article_id");
+
+  if (author != null) {
+    query = query.where("articles.author", author);
+  };
+  if (topic != null) {
+    query = query.where("articles.topic", topic);
+  };
+  return query
+    .groupBy("articles.article_id")
+    .orderBy(sort_by || "created_at", order || 'desc');
 };
 
 exports.fetchArticleById = (article_id) => {

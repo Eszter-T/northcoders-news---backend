@@ -55,8 +55,20 @@ describe('/api', () => {
         expect(msg).toBe('User not found');
       });
     });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['patch', 'put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/users/butter_bridge')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
   });
-  describe.only('/articles', () => {
+  describe('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
       .get('/api/articles')
@@ -64,7 +76,7 @@ describe('/api', () => {
       .then(({ body: { articles }}) => {
         expect(Array.isArray(articles)).toBe(true);
         expect(articles).toHaveLength(12);
-        expect(articles[0]).toHaveProperty('comment_count', "0");
+        expect(articles[0]).toHaveProperty('comment_count', "13");
       });
     });
     test('QUERY articles are sorted by date by default',() => {
@@ -72,7 +84,7 @@ describe('/api', () => {
         .get('/api/articles')
         .expect(200)
         .then(({ body: {articles} }) => {
-          expect(articles).toBeSortedBy('created_at');
+          expect(articles).toBeSortedBy('created_at', {descending: true});
       });
     });
     test('QUERY articles can be sorted by any valid column', () => {
@@ -80,16 +92,46 @@ describe('/api', () => {
       .get('/api/articles?sort_by=topic')
       .expect(200)
       .then(({body: {articles}}) => {
-        expect(articles).toBeSortedBy('topic');
+        expect(articles).toBeSortedBy('topic', {descending: true});
+      });
+    });
+    test('QUERY articles are ordered in descending order by default', () => {
+      return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(articles).toBeSortedBy('created_at', {descending: true})
       });
     });
     test('QUERY -filters the articles by author', () => {
       return request(app)
-      .get('/api/articles?author=butter_bridge')
+      .get('/api/articles?author=icellusedkars')
       .expect(200)
       .then(({body: {articles}}) => {
-        console.log(articles)
-      })
+        
+        expect(articles[0].author).toBe('icellusedkars');
+      });
+    });
+    test('QUERY -filters the articles by topic', () => {
+      return request(app)
+      .get('/api/articles?topic=mitch')
+      .expect(200)
+      .then(({body: {articles}}) => {
+        
+        expect(articles[0].topic).toBe('mitch');
+      });
+    });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/articles')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
     });
     test('GET article by article_id, status: 200', () => {
       return request(app)
@@ -119,6 +161,18 @@ describe('/api', () => {
       .then(({body: {msg} }) => {
         expect(msg).toBe('Article not found');
       });
+    });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/articles/1')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
     });
     test('PATCH responds with the updated article', () => {
       return request(app)
@@ -189,7 +243,7 @@ describe('/api', () => {
         .get('/api/articles/1/comments')
         .expect(200)
         .then(({ body: { comments }}) => {
-          expect(comments).toBeSortedBy('created_at');
+          expect(comments).toBeSortedBy('created_at', {descending: true});
       });
     });
     test('QUERY comments are sorted by author', () => {
@@ -197,15 +251,15 @@ describe('/api', () => {
       .get('/api/articles/1/comments?sort_by=author')
       .expect(200)
       .then(({body: {comments}}) => {
-        expect(comments).toBeSortedBy('author');
+        expect(comments).toBeSortedBy('author', {descending: true});
       });
     });
-    xtest('QUERY comments ordered in descending order by default', () => {
+    test('QUERY comments ordered in descending order by default', () => {
       return request(app)
-      .get('/api/articles/1/comments?order=descending')
+      .get('/api/articles/1/comments?order=desc')
       .expect(200)
       .then(({body: {comments}}) => {
-        expect(comments).toBeSortedBy('author', 'desc')
+        expect(comments).toBeSortedBy('created_at', {descending: true})
       });
     });
     test('Status 404: article_id valid but non-existent', () => {
@@ -214,6 +268,36 @@ describe('/api', () => {
       .expect(404)
       .then(({body: {msg}}) => {
         expect(msg).toBe('Article_id not found');
+      });
+    });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/articles/1/comments')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
+  describe.only('/comments', () => {
+    test('PATCH responds with the updated comment', () => {
+      return request(app)
+      .patch('/api/comments/1')
+      .send({ inc_votes: 1})
+      .expect(200)
+      .then(({ body: {comment}}) => {
+        expect(comment).toEqual({
+          comment_id: 1,
+          author: 'butter_bridge',
+          article_id: 9,
+          votes: 17,
+          created_at: '2017-11-22T12:36:03.389Z',
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+        });
       });
     });
   });

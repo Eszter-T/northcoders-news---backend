@@ -90,7 +90,7 @@ describe("changeTimeStamp", () => {
     let actual = changeTimeStamp(input, key);
     expect(actual).toEqual(outPut);
   });
-  test("returns an unmutated array", () => {
+  test("returns a new array", () => {
     let input = [
       {
         title: "Living in the shadow of a great man",
@@ -114,13 +114,37 @@ describe("changeTimeStamp", () => {
       },
     ]);
   });
+  test('does not mutate the input array', () => {
+    const input = [
+    {
+      title: "Living in the shadow of a great man",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "I find this existence challenging",
+      created_at: 1542284514171,
+      votes: 100,
+    },
+    ];
+    const key = "created_at";
+    changeTimeStamp(input, key)
+    expect(input).toEqual([
+      {
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: 1542284514171,
+        votes: 100,
+      },
+      ]);
+  });
 });
 
 describe("createRefObj", () => {
-  test("should return an empty object when called with an empty array", () => {
+  test("returns an empty object when called with an empty array", () => {
     expect(createRefObj([])).toEqual({});
   });
-  test("should take an array with a single object and 2 keys, and return an object with the value of those keys as a key-value pair.  ", () => {
+  test("takes an array with a single object and 2 keys, and returns an object with the value of those keys as a key-value pair.  ", () => {
     
     const inputArticles = [
       {
@@ -138,7 +162,7 @@ describe("createRefObj", () => {
 
     expect(actual).toEqual(expected);
   });
-  test("should work with multiple objects", () => {
+  test("works with multiple objects", () => {
     const inputArticles = [{
       article_id: 1,
       title: 'Living in the shadow of a great man',
@@ -161,7 +185,7 @@ describe("createRefObj", () => {
     const expected = { 'Living in the shadow of a great man': 1, 'Eight pug gifs that remind me of mitch': 2 };
     expect(actual).toEqual(expected);
   });
-  test("should not mutate the original array", () => {
+  test("input and output have different references", () => {
     const input = [
     {
       article_id: 0,
@@ -175,6 +199,29 @@ describe("createRefObj", () => {
     const actual = createRefObj(input, "title", "article_id");
     expect(input).not.toBe(actual);
   });
+  test('does not mutate the input array', () => {
+    const input = [
+      {
+        article_id: 0,
+        title: "They're not exactly dogs, are they?",
+        topic: 'mitch',
+        author: 'butter_bridge',
+        body: 'Well? Think about it.',
+        created_at: 533132514171,
+      },
+    ];
+    createRefObj(input, "title", "article_id");
+    expect(input).toEqual([
+      {
+        article_id: 0,
+        title: "They're not exactly dogs, are they?",
+        topic: 'mitch',
+        author: 'butter_bridge',
+        body: 'Well? Think about it.',
+        created_at: 533132514171,
+      },
+    ]);
+  });
 });
 
 describe("switchKeyRef", () => {
@@ -183,10 +230,10 @@ describe("switchKeyRef", () => {
     'Living in the shadow of a great man': 1, 
     'Eight pug gifs that remind me of mitch': 2 
   };
-  test("should return an empty array when called with an empty array", () => {
+  test("returns an empty array when called with an empty array", () => {
     expect(switchKeyRef([])).toEqual([]);
   });
-  test("should switchKeyRef works on single object", () => {
+  test("switchKeyRef works on a single object", () => {
     const input = [{
       body:
         "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
@@ -207,7 +254,7 @@ describe("switchKeyRef", () => {
 
     expect(actual).toEqual(output);
   });
-  test("should switchKeyRef works on an array of several objects", () => {
+  test("switchKeyRef works on an array of several objects", () => {
     const input = [{
       body:
         "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
@@ -244,7 +291,7 @@ describe("switchKeyRef", () => {
 
     expect(actual).toEqual(output);
   });
-  test("input array should not equal output array", () => {
+  test("input and output have different references", () => {
     const input = [{
       body:
         "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
@@ -264,5 +311,24 @@ describe("switchKeyRef", () => {
     const actual = switchKeyRef(input, refObject, "belongs_to", "article_id");
 
     expect(actual).not.toBe(input);
+  });
+  test('does not mutate the input array', () => {
+    const input = [{
+      body:
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+      belongs_to: "They're not exactly dogs, are they?",
+      created_by: 'butter_bridge',
+      votes: 16,
+      created_at: 1511354163389,
+    }];
+    switchKeyRef(input, refObject, "belongs_to", "article_id");
+    expect(input).toEqual([{
+      body:
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+      belongs_to: "They're not exactly dogs, are they?",
+      created_by: 'butter_bridge',
+      votes: 16,
+      created_at: 1511354163389,
+    }]);
   });
 });

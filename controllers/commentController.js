@@ -1,4 +1,4 @@
-const { writeCommentByArticleId, fetchCommentsByArticleId } = require('../models/commentModel');
+const { writeCommentByArticleId, fetchCommentsByArticleId, updateCommentById, fetchCommentById } = require('../models/commentModel');
 const { fetchArticleById, checkArticleExists } = require("../models/articleModel");
 
 
@@ -16,6 +16,9 @@ exports.postCommentByArticleId = (req, res, next) => {
             .then((comment) => {
                 res.status(201).send({ comment });
             });
+    })
+    .catch((err) => {
+      next(err);
     });
 };
 
@@ -28,4 +31,19 @@ exports.getCommentsByArticleId = (req, res, next) => {
     .catch(error => { 
         next(error)
     });
+};
+
+exports.patchCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+  updateCommentById(comment_id, inc_votes)
+  .then(() => {
+    fetchCommentById(comment_id).then(([comment]) => {
+      res.status(200).send({ comment });
+    });
+  })
+  .catch((err) => {
+    console.log(err)
+    next(err);
+  });
 };

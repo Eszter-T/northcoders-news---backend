@@ -3,6 +3,9 @@ const { fetchArticleById, fetchArticles, updateArticleById } = require('../model
 exports.getArticles = (req, res, next) => {
   fetchArticles(req.query).then((articles) => {
       res.status(200).send({ articles });
+  })
+  .catch((err) => {
+    next(err);
   });
 };
 
@@ -13,6 +16,9 @@ exports.getArticleById = (req, res, next) => {
       return res.status(404).send({msg: 'Article not found'});
     };
     res.status(200).send({ article });
+  })
+  .catch((err) => {
+    next(err);
   });
 };
 
@@ -22,5 +28,8 @@ exports.patchArticleById = (req, res, next) => {
   updateArticleById(article_id, inc_votes )
   .then(() => {
     exports.getArticleById(req, res, next)
+  })
+  .catch((err) => {
+    next(err);
   });
 };
