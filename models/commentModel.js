@@ -49,3 +49,8 @@ exports.fetchCommentById = (comment_id) => {
   .from("comments")
   .where("comment_id", comment_id)
 };
+
+exports.removeCommentById = (comment_id) => {
+  return dbConnection("comments").where("comment_id", comment_id).del();
+
+};

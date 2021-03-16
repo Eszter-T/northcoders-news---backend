@@ -23,5 +23,11 @@
         }
       ]
     }
+  },
+  "GET /": {
+    "description": "",
+    "queries": [""],
+    "exampleResponse": {
+    }
   }
 }

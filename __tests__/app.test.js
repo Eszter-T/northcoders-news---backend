@@ -9,6 +9,14 @@ afterAll(() => dbConnection.destroy());
 
 
 describe('/api', () => {
+  test('GET endpoints', () => {
+    return request(app)
+    .get('/api')
+    .expect(200)
+    .then(( { body } ) => {
+      console.log(body)
+    });
+  });
   describe('/topics', () => {
     test('GET Status: 200', () => {
       return request(app)
@@ -283,7 +291,7 @@ describe('/api', () => {
       return Promise.all(methodPromises);
     });
   });
-  describe.only('/comments', () => {
+  describe('/comments', () => {
     test('PATCH responds with the updated comment', () => {
       return request(app)
       .patch('/api/comments/1')
@@ -298,6 +306,17 @@ describe('/api', () => {
           created_at: '2017-11-22T12:36:03.389Z',
           body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
         });
+      });
+    });
+    test('DELETE responds with status 204 and no content', () => {
+      return request(app)
+      .delete('/api/comments/2')
+      .expect(204)
+      .then(() => {
+        return dbConnection.select("*").from("comments").where("comment_id", 2);
+      })
+      .then((comments) => {
+        expect(comments).toHaveLength(0);
       });
     });
   });
