@@ -1,6 +1,6 @@
 const { dbConnection } = require('../db/dbConnection');
 
-exports.fetchArticles = ({ sort_by, order, author = null, topic = null}) => {
+exports.fetchArticles = ({ sort_by, order, author = null, topic = null, limit = 10, p = 1}) => {
   let query = dbConnection
   .select(
     "articles.article_id",
@@ -23,7 +23,9 @@ exports.fetchArticles = ({ sort_by, order, author = null, topic = null}) => {
   };
   return query
     .groupBy("articles.article_id")
-    .orderBy(sort_by || "created_at", order || 'desc');
+    .orderBy(sort_by || "created_at", order || 'desc')
+    .offset((p - 1) * limit)
+    .limit(limit);
 };
 
 exports.fetchArticleById = (article_id) => {
@@ -43,6 +45,12 @@ exports.fetchArticleById = (article_id) => {
   .leftJoin("comments", "articles.article_id", "=", "comments.article_id")
   .groupBy("articles.article_id")
   .orderBy("title", "asc")
+  .then(([article]) => {
+    if (!article) {
+      return Promise.reject({ status: 404, msg: 'Article not found' });
+    };
+    return article;
+  });
 };
 
 exports.updateArticleById = (article_id, inc_votes) => {
@@ -63,5 +71,8 @@ exports.checkArticleExists = (article_id) => {
     };
   
   });
+};
 
+exports.removeArticleById = (article_id) => {
+  return dbConnection("articles").where("article_id", article_id).del();
 };

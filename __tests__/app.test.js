@@ -14,7 +14,18 @@ describe('/api', () => {
     .get('/api')
     .expect(200)
     .then(( { body } ) => {
-      console.log(body)
+      expect(typeof body).toBe('object');
+      expect(body).toHaveProperty('GET /api');
+      expect(body).toHaveProperty('GET /api/topics');
+      expect(body).toHaveProperty('GET /api/articles');
+      expect(body).toHaveProperty('GET /api/articles/:article_id');
+      expect(body).toHaveProperty('GET /api/articles/:article_id/comments');
+      expect(body).toHaveProperty('GET /api/users/:username');
+      expect(body).toHaveProperty('PATCH /api/articles/:article_id');
+      expect(body).toHaveProperty('PATCH /api/comments/:comment_id');
+      expect(body).toHaveProperty('POST /api/articles/:article_id/comments');
+      expect(body).toHaveProperty('DELETE /api/comments/:comment_id');
+      expect(body).toHaveProperty('DELETE /api/articles/:article_id');
     });
   });
   describe('/topics', () => {
@@ -47,8 +58,8 @@ describe('/api', () => {
       .get('/api/users/butter_bridge')
       .expect(200)
       .then(({ body: {user} }) => {
-         expect(typeof user[0]).toBe('object');
-         expect(user[0]).toEqual({
+         expect(typeof user).toBe('object');
+         expect(user).toEqual({
           username: 'butter_bridge',
           name: 'jonny',
           avatar_url: 'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg',
@@ -79,12 +90,28 @@ describe('/api', () => {
   describe('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
-      .get('/api/articles')
+      .get('/api/articles?limit=12')
       .expect(200)
       .then(({ body: { articles }}) => {
         expect(Array.isArray(articles)).toBe(true);
         expect(articles).toHaveLength(12);
         expect(articles[0]).toHaveProperty('comment_count', "13");
+      });
+    });
+    test('GET QUERY responds with a limited number of articles (defaults to 10)', () => {
+      return request(app)
+      .get('/api/articles?limit=8')
+      .expect(200)
+      .then(({ body: { articles }}) => {
+        expect(articles.length).toBe(8);
+      });
+    });
+    test('GET QUERY specifies the page at wgich to start', () => {
+      return request(app)
+      .get('/api/articles?p=2')
+      .expect(200)
+      .then(({ body: { articles }}) => {
+        expect(articles[0].article_id).toBe(11);
       });
     });
     test('QUERY articles are sorted by date by default',() => {
@@ -146,8 +173,7 @@ describe('/api', () => {
       .get('/api/articles/1')
       .expect(200)
       .then(({body: { article }}) => {
-        expect(Array.isArray(article)).toBe(true);
-        expect(article[0]).toMatchObject(
+        expect(article).toMatchObject(
           {
             article_id: expect.any(Number),
             title: expect.any(String),
@@ -159,7 +185,29 @@ describe('/api', () => {
             comment_count: expect.any(String)
           }
         );
-        expect(article[0].comment_count).toBe("13");
+        expect(article.comment_count).toBe("13");
+      });
+    });
+    test('DELETE responds with status 204 and no content', () => {
+      return request(app)
+      .delete('/api/articles/2')
+      .expect(204)
+      .then(() => {
+        return dbConnection.select("*").from("articles").where("article_id", 2);
+      })
+      .then((articles) => {
+        expect(articles).toHaveLength(0);
+      });
+    });
+    test('DELETEs an article referenced by the comments table', () => {
+      return request(app)
+      .delete('/api/articles/1')
+      .expect(204)
+      .then(() => {
+        return dbConnection.select("*").from("articles").where("article_id", 1);
+      })
+      .then((articles) => {
+        expect(articles).toHaveLength(0);
       });
     });
     test('GET - article that does not exist, status: 404 not found', () => {
@@ -171,7 +219,7 @@ describe('/api', () => {
       });
     });
     test('INVALID METHODS - status:405', () => {
-      const invalidMethods = ['put', 'delete'];
+      const invalidMethods = ['put'];
       const methodPromises = invalidMethods.map((method) => {
         return request(app)
           [method]('/api/articles/1')
@@ -188,7 +236,7 @@ describe('/api', () => {
       .send({ inc_votes : 1 })
       .expect(200)
       .then(({ body:  { article }}) => {
-        expect(article[0]).toEqual(
+        expect(article).toEqual(
           {
             article_id: 1,
             title: 'Living in the shadow of a great man',

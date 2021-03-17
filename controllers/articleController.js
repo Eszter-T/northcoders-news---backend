@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchArticles, updateArticleById } = require('../models/articleModel');
+const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById } = require('../models/articleModel');
 
 exports.getArticles = (req, res, next) => {
   fetchArticles(req.query).then((articles) => {
@@ -12,9 +12,6 @@ exports.getArticles = (req, res, next) => {
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params
   fetchArticleById(article_id).then((article) => {
-    if(!article.length) {
-      return res.status(404).send({msg: 'Article not found'});
-    };
     res.status(200).send({ article });
   })
   .catch((err) => {
@@ -28,6 +25,16 @@ exports.patchArticleById = (req, res, next) => {
   updateArticleById(article_id, inc_votes )
   .then(() => {
     exports.getArticleById(req, res, next)
+  })
+  .catch((err) => {
+    next(err);
+  });
+};
+
+exports.deleteArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  removeArticleById(article_id).then(() => {
+    res.sendStatus(204);
   })
   .catch((err) => {
     next(err);
