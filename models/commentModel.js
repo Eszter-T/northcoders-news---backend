@@ -5,7 +5,6 @@ exports.writeCommentByArticleId = (username, body, article_id) => {
         body,
         article_id,
         author: username,
-        created_at: new Date()
   }
   return dbConnection("comments")
   .insert(comment)

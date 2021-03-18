@@ -48,6 +48,24 @@ describe('/api', () => {
         expect(topic).toEqual({ description: 'Thoughts about Mondays', slug: 'Monday'});
       });
     });
+    test('ERROR- Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .post('/api/topics')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .post('/api/topics')
+      .send({ username: 'bigboy' })
+      .expect(400)
+      .then(({ body: {msg} }) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
     test('INVALID METHODS - status:405', () => {
       const invalidMethods = ['patch', 'put', 'delete'];
       const methodPromises = invalidMethods.map((method) => {
@@ -75,7 +93,7 @@ describe('/api', () => {
         });
       });
     });
-    test('GET - user that does not exist, status: 404 not found', () => {
+    test('ERROR - user that does not exist, status: 404 not found', () => {
       return request(app)
       .get('/api/users/NotAUserYet')
       .expect(404)
@@ -106,6 +124,19 @@ describe('/api', () => {
         expect(users[0]).toHaveProperty('avatar_url');
       });
     });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['patch', 'put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/users')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
+  });
     test('POST responds with the posted user', () => {
       return request(app)
       .post('/api/users')
@@ -123,20 +154,25 @@ describe('/api', () => {
         });
       });
     });
-    test('INVALID METHODS - status:405', () => {
-      const invalidMethods = ['patch', 'put', 'delete'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)
-          [method]('/api/users')
-          .expect(405)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Method not allowed');
-          });
+    test('ERROR- Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .post('/api/users')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
       });
-      return Promise.all(methodPromises);
     });
-  });
-  describe('/articles', () => {
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .post('/api/topics')
+      .send({ user_rating: 10 })
+      .expect(400)
+      .then(({ body: {msg} }) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
+  describe.only('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
       .get('/api/articles?limit=12')
@@ -161,6 +197,15 @@ describe('/api', () => {
       .expect(200)
       .then(({ body: { articles }}) => {
         expect(articles[0].article_id).toBe(11);
+      });
+    });
+    test('GET has a total count property, displaying the total number of articles', () => {
+      return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveProperty('total_count');
+        expect(body.total_count).toBe("12");
       });
     });
     test('QUERY articles are sorted by date by default',() => {
@@ -192,7 +237,6 @@ describe('/api', () => {
       .get('/api/articles?author=icellusedkars')
       .expect(200)
       .then(({body: {articles}}) => {
-        
         expect(articles[0].author).toBe('icellusedkars');
       });
     });
@@ -203,6 +247,14 @@ describe('/api', () => {
       .then(({body: {articles}}) => {
         
         expect(articles[0].topic).toBe('mitch');
+      });
+    });
+    test('ERROR - Status 404 - non-existent topic in query', () => {
+      return request(app)
+      .get('/api/articles?topic=not-a-topic')
+      .expect(404)
+      .then(({body: {msg}}) => {
+        expect(msg).toBe('Topic not found')
       });
     });
     test('POST responds with the posted article', () => {
@@ -329,14 +381,14 @@ describe('/api', () => {
       .send({username: 'butter_bridge', body: 'Thought about it, they are not, indeed.'})
       .expect(201)
       .then(({ body: { comment } }) => {
-        delete comment["created_at"];
         expect(comment).toEqual(
           {
             comment_id: 19,
             body: 'Thought about it, they are not, indeed.',
             article_id: 9,
             author: 'butter_bridge',
-            votes: 0
+            votes: 0,
+            created_at: expect.any(String)
           }
         );
       });

@@ -1,13 +1,20 @@
-const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById, writeArticle } = require('../models/articleModel');
+const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById, writeArticle, totalArticleNumber } = require('../models/articleModel');
 const { writeCommentByArticleId } = require('../models/commentModel');
+const { checkTopicExists } = require('../models/topicsModel');
 
 exports.getArticles = (req, res, next) => {
-  fetchArticles(req.query).then((articles) => {
-      res.status(200).send({ articles });
-  })
-  .catch((err) => {
-    next(err);
-  });
+  checkTopicExists(req.query)
+    .then(() => {
+      fetchArticles(req.query)
+      .then((articles) => {
+        totalArticleNumber(req.query).then(([articles_metadata]) => {
+          res.status(200).send({ articles, total_count: articles_metadata.count });
+        })
+      })
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 exports.getArticleById = (req, res, next) => {

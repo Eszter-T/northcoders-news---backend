@@ -1,5 +1,18 @@
 const { dbConnection } = require('../db/dbConnection');
+exports.totalArticleNumber = ({ author = null, topic = null }) => {
+  let query = dbConnection
+  .count("articles.article_id")
+  .from("articles");
 
+  if (author != null) {
+    query = query.where("articles.author", author);
+  };
+  if (topic != null) {
+    query = query.where("articles.topic", topic);
+  };
+
+  return query;
+}
 exports.fetchArticles = ({ sort_by, order, author = null, topic = null, limit = 10, p = 1}) => {
   let query = dbConnection
   .select(
@@ -21,11 +34,12 @@ exports.fetchArticles = ({ sort_by, order, author = null, topic = null, limit = 
   if (topic != null) {
     query = query.where("articles.topic", topic);
   };
+
   return query
     .groupBy("articles.article_id")
     .orderBy(sort_by || "created_at", order || 'desc')
     .offset((p - 1) * limit)
-    .limit(limit);
+    .limit(limit)
 };
 
 exports.fetchArticleById = (article_id) => {

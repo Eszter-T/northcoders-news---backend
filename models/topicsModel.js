@@ -12,5 +12,20 @@ exports.writeTopic = (description, slug) => {
   };
   return dbConnection("topics")
   .insert(topic)
-  .returning("*");
+  .returning("*")
+};
+
+exports.checkTopicExists = ({ topic = null}) => {
+  if(topic == null) {
+    return Promise.resolve();
+  }
+  return dbConnection
+  .select("*")
+  .from("topics")
+  .where("slug", topic)
+  .then(([topic]) => {
+    if (topic === undefined) {
+      return Promise.reject({ status: 404, msg: "Topic not found"});
+    };
+  });
 };
