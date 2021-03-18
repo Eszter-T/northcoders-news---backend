@@ -5,3 +5,12 @@ exports.fetchTopics = () => {
   
 };
 
+exports.writeTopic = (description, slug) => {
+  const topic = {
+    description,
+    slug
+  };
+  return dbConnection("topics")
+  .insert(topic)
+  .returning("*");
+};

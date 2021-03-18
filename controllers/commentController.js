@@ -8,7 +8,7 @@ exports.postCommentByArticleId = (req, res, next) => {
     
   fetchArticleById(article_id)
     .then(() => writeCommentByArticleId(username, body, article_id)
-      .then((comment) => {
+      .then(([comment]) => {
         res.status(201).send({ comment });
       })
     )

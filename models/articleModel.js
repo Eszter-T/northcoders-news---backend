@@ -76,3 +76,15 @@ exports.checkArticleExists = (article_id) => {
 exports.removeArticleById = (article_id) => {
   return dbConnection("articles").where("article_id", article_id).del();
 };
+
+exports.writeArticle = (title, topic, author, body) => {
+  const article = {
+    title,
+    topic,
+    author,
+    body
+  };
+  return dbConnection("articles")
+  .insert(article)
+  .returning("*");
+};

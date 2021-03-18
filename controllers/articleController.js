@@ -1,4 +1,5 @@
-const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById } = require('../models/articleModel');
+const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById, writeArticle } = require('../models/articleModel');
+const { writeCommentByArticleId } = require('../models/commentModel');
 
 exports.getArticles = (req, res, next) => {
   fetchArticles(req.query).then((articles) => {
@@ -35,6 +36,16 @@ exports.deleteArticleById = (req, res, next) => {
   const { article_id } = req.params;
   removeArticleById(article_id).then(() => {
     res.sendStatus(204);
+  })
+  .catch((err) => {
+    next(err);
+  });
+};
+
+exports.postArticle = (req, res, next) => {
+  const { title, topic, author, body } = req.body;
+  writeArticle(title, topic, author, body).then(([article]) => {
+    res.status(201).send({article});
   })
   .catch((err) => {
     next(err);

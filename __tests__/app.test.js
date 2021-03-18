@@ -29,7 +29,7 @@ describe('/api', () => {
     });
   });
   describe('/topics', () => {
-    test('GET Status: 200', () => {
+    test('GET reponds with an array of topic objects', () => {
       return request(app)
       .get('/api/topics')
       .expect(200)
@@ -37,6 +37,15 @@ describe('/api', () => {
          expect(topics.length).toBe(3);
          expect(topics[0]).toHaveProperty('slug');
          expect(topics[0]).toHaveProperty('description');
+      });
+    });
+    test('POST responds with the posted topic', () => {
+      return request(app)
+      .post('/api/topics')
+      .send({ description: 'Thoughts about Mondays', slug: 'Monday'})
+      .expect(201)
+      .then(({ body: { topic } }) => {
+        expect(topic).toEqual({ description: 'Thoughts about Mondays', slug: 'Monday'});
       });
     });
     test('INVALID METHODS - status:405', () => {
@@ -86,6 +95,46 @@ describe('/api', () => {
       });
       return Promise.all(methodPromises);
     });
+    test('GET responds with an array of user objects', () => {
+      return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body: {users}}) => {
+        expect(users.length).toBe(4);
+        expect(users[0]).toHaveProperty('username');
+        expect(users[0]).toHaveProperty('name');
+        expect(users[0]).toHaveProperty('avatar_url');
+      });
+    });
+    test('POST responds with the posted user', () => {
+      return request(app)
+      .post('/api/users')
+      .send({
+        username: 'bookworm',
+        name: 'george',
+        avatar_url: 'https://www.thebestbookstoread.com/my-books/uploads/2020/08/GoT.jpg'
+      })
+      .expect(201)
+      .then(({ body: { user } }) => {
+        expect(user).toEqual({
+          username: 'bookworm',
+          name: 'george',
+          avatar_url: 'https://www.thebestbookstoread.com/my-books/uploads/2020/08/GoT.jpg'
+        });
+      });
+    });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['patch', 'put', 'delete'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/users')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
   });
   describe('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
@@ -106,7 +155,7 @@ describe('/api', () => {
         expect(articles.length).toBe(8);
       });
     });
-    test('GET QUERY specifies the page at wgich to start', () => {
+    test('GET QUERY specifies the page at which to start', () => {
       return request(app)
       .get('/api/articles?p=2')
       .expect(200)
@@ -154,6 +203,30 @@ describe('/api', () => {
       .then(({body: {articles}}) => {
         
         expect(articles[0].topic).toBe('mitch');
+      });
+    });
+    test('POST responds with the posted article', () => {
+      return request(app)
+      .post('/api/articles')
+      .send({
+        title: 'My favourite type of cat',
+        topic: 'cats',
+        author: 'butter_bridge',
+        body: 'Smelly cat. The best!!!',
+      })
+      .expect(201)
+      .then(({ body: { article } }) => {
+        expect(article).toEqual(
+          {
+            article_id: 13,
+            title: 'My favourite type of cat',
+            body: 'Smelly cat. The best!!!',
+            votes: 0,
+            topic: 'cats',
+            author: 'butter_bridge',
+            created_at: expect.any(String)
+          }
+        );
       });
     });
     test('INVALID METHODS - status:405', () => {
@@ -250,14 +323,14 @@ describe('/api', () => {
         );
       });
     });
-    test('POST reponds with the posted comment', () => {
+    test('POST responds with the posted comment', () => {
       return request(app)
       .post('/api/articles/9/comments')
       .send({username: 'butter_bridge', body: 'Thought about it, they are not, indeed.'})
       .expect(201)
       .then(({ body: { comment } }) => {
-        delete comment[0]["created_at"];
-        expect(comment[0]).toEqual(
+        delete comment["created_at"];
+        expect(comment).toEqual(
           {
             comment_id: 19,
             body: 'Thought about it, they are not, indeed.',
@@ -316,6 +389,22 @@ describe('/api', () => {
       .expect(200)
       .then(({body: {comments}}) => {
         expect(comments).toBeSortedBy('created_at', {descending: true})
+      });
+    });
+    test('GET QUERY responds with a limited number of comments (defaults to 10)', () => {
+      return request(app)
+      .get('/api/articles/1/comments?limit=8')
+      .expect(200)
+      .then(({ body: { comments }}) => {
+        expect(comments.length).toBe(8);
+      });
+    });
+    test('GET QUERY specifies the page at which to start', () => {
+      return request(app)
+      .get('/api/articles/1/comments?p=2')
+      .expect(200)
+      .then(({ body: { comments }}) => {
+        expect(comments[0].comment_id).toBe(12);
       });
     });
     test('Status 404: article_id valid but non-existent', () => {

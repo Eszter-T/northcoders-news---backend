@@ -1,6 +1,6 @@
 const { dbConnection } = require('../db/dbConnection');
 
-exports.fetchUser = (username) => {
+exports.fetchUserByUsername = (username) => {
   return dbConnection
   .select("*")
   .from("users")
@@ -11,4 +11,19 @@ exports.fetchUser = (username) => {
     };
     return user;
   });
+};
+
+exports.writeUser = (username, name, avatar_url) => {
+  const user = {
+    username,
+    name,
+    avatar_url
+  };
+  return dbConnection("users")
+  .insert(user)
+  .returning("*");
+};
+
+exports.fetchUsers = () => {
+  return dbConnection.select("*").from("users");
 };
