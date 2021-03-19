@@ -1,4 +1,4 @@
-const { writeCommentByArticleId, fetchCommentsByArticleId, updateCommentById, fetchCommentById, removeCommentById } = require('../models/commentModel');
+const { writeCommentByArticleId, fetchCommentsByArticleId, updateCommentById, fetchCommentById, removeCommentById, checkCommentExists } = require('../models/commentModel');
 const { fetchArticleById, checkArticleExists } = require("../models/articleModel");
 
 
@@ -38,15 +38,16 @@ exports.patchCommentById = (req, res, next) => {
     });
   })
   .catch((err) => {
-    console.log(err)
     next(err);
   });
 };
 
 exports.deleteCommentById = (req, res, next) => {
   const { comment_id } = req.params;
-  removeCommentById(comment_id).then(() => {
-    res.sendStatus(204);
+  checkCommentExists(comment_id).then(() => {
+    removeCommentById(comment_id).then(() => {
+      res.sendStatus(204);
+    });
   })
   .catch((err) => {
     next(err);

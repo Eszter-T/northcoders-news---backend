@@ -87,7 +87,6 @@ exports.checkArticleExists = (article_id) => {
     if (article === undefined) {
       return Promise.reject({ status: 404, msg: "Article_id not found"});
     };
-  
   });
 };
 

@@ -17,13 +17,17 @@ describe('/api', () => {
       expect(typeof body).toBe('object');
       expect(body).toHaveProperty('GET /api');
       expect(body).toHaveProperty('GET /api/topics');
+      expect(body).toHaveProperty('GET /api/users');
       expect(body).toHaveProperty('GET /api/articles');
       expect(body).toHaveProperty('GET /api/articles/:article_id');
       expect(body).toHaveProperty('GET /api/articles/:article_id/comments');
       expect(body).toHaveProperty('GET /api/users/:username');
       expect(body).toHaveProperty('PATCH /api/articles/:article_id');
       expect(body).toHaveProperty('PATCH /api/comments/:comment_id');
+      expect(body).toHaveProperty('POST /api/articles');
       expect(body).toHaveProperty('POST /api/articles/:article_id/comments');
+      expect(body).toHaveProperty('POST /api/topics');
+      expect(body).toHaveProperty('POST /api/users');
       expect(body).toHaveProperty('DELETE /api/comments/:comment_id');
       expect(body).toHaveProperty('DELETE /api/articles/:article_id');
     });
@@ -136,7 +140,6 @@ describe('/api', () => {
       });
       return Promise.all(methodPromises);
     });
-  });
     test('POST responds with the posted user', () => {
       return request(app)
       .post('/api/users')
@@ -172,6 +175,7 @@ describe('/api', () => {
         expect(msg).toBe('Bad request');
       });
     });
+  });
   describe('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
@@ -561,12 +565,20 @@ describe('/api', () => {
         expect(comments[0].comment_id).toBe(12);
       });
     });
-    test('Status 404: article_id valid but non-existent', () => {
+    test('ERROR - Status 404 - article_id valid but non-existent', () => {
       return request(app)
       .get('/api/articles/999/comments')
       .expect(404)
       .then(({body: {msg}}) => {
         expect(msg).toBe('Article_id not found');
+      });
+    });
+    test('ERROR - Status 400 - invalid article ID', () => {
+      return request(app)
+      .get('/api/articles/notAnId/comments')
+      .expect(400)
+      .then(({body: {msg}}) => {
+        expect(msg).toBe('Bad request');
       });
     });
     test('INVALID METHODS - status:405', () => {
@@ -599,6 +611,24 @@ describe('/api', () => {
         });
       });
     });
+    test('ERROR - Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .patch('/api/comments/1')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request - inc_votes required');
+      });
+    });
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .patch('/api/comments/1')
+      .send({ inc_votes: 'word' })
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
     test('DELETE responds with status 204 and no content', () => {
       return request(app)
       .delete('/api/comments/2')
@@ -608,6 +638,22 @@ describe('/api', () => {
       })
       .then((comments) => {
         expect(comments).toHaveLength(0);
+      });
+    });
+    test('ERROR - Status 404 - comment that does not exist', () => {
+      return request(app)
+      .delete('/api/comments/999')
+      .expect(404)
+      .then(({body: {msg} }) => {
+        expect(msg).toBe('Comment_id not found');
+      });
+    });
+    test('ERROR - Status 400 - invalid ID', () => {
+      return request(app)
+      .delete('/api/comments/notAnId')
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
       });
     });
   });

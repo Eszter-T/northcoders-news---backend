@@ -30,6 +30,9 @@ exports.fetchCommentsByArticleId = (article_id, { sort_by, order, limit = 10, p 
 };
 
 exports.updateCommentById = (comment_id, inc_votes) => {
+  if (!inc_votes) {
+    return Promise.reject({ status: 400, msg: "Bad request - inc_votes required"})
+  };
   return dbConnection
   .from("comments")
   .where("comment_id", comment_id)
@@ -52,5 +55,16 @@ exports.fetchCommentById = (comment_id) => {
 
 exports.removeCommentById = (comment_id) => {
   return dbConnection("comments").where("comment_id", comment_id).del();
+};
 
+exports.checkCommentExists = (comment_id) => {
+  return dbConnection
+  .select("*")
+  .from("comments")
+  .where("comment_id", comment_id)
+  .then(([comment]) => {
+    if (comment === undefined) {
+      return Promise.reject({ status: 404, msg: "Comment_id not found" });
+    };
+  });
 };
