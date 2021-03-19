@@ -1,9 +1,10 @@
-const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById, writeArticle, totalArticleNumber } = require('../models/articleModel');
+const { fetchArticleById, fetchArticles, updateArticleById, removeArticleById, writeArticle, totalArticleNumber, checkArticleExists } = require('../models/articleModel');
 const { writeCommentByArticleId } = require('../models/commentModel');
 const { checkTopicExists } = require('../models/topicsModel');
+const { checkAuthorExists } = require('../models/userModel');
 
 exports.getArticles = (req, res, next) => {
-  checkTopicExists(req.query)
+  Promise.all([checkTopicExists(req.query), checkAuthorExists(req.query)])
     .then(() => {
       fetchArticles(req.query)
       .then((articles) => {
@@ -41,8 +42,10 @@ exports.patchArticleById = (req, res, next) => {
 
 exports.deleteArticleById = (req, res, next) => {
   const { article_id } = req.params;
-  removeArticleById(article_id).then(() => {
-    res.sendStatus(204);
+  checkArticleExists(article_id).then(() => {
+    removeArticleById(article_id).then(() => {
+      res.sendStatus(204);
+    });
   })
   .catch((err) => {
     next(err);

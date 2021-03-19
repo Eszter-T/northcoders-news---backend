@@ -172,7 +172,7 @@ describe('/api', () => {
         expect(msg).toBe('Bad request');
       });
     });
-  describe.only('/articles', () => {
+  describe('/articles', () => {
     test('GET responds with an array of article objects, each article obj has comment_count property', () => {
       return request(app)
       .get('/api/articles?limit=12')
@@ -240,6 +240,22 @@ describe('/api', () => {
         expect(articles[0].author).toBe('icellusedkars');
       });
     });
+    test('QUERY - author exists, but has no articles', () => {
+      return request(app)
+      .get('/api/articles?author=lurker')
+      .expect(200)
+      .then(({body: {articles}}) => {
+        expect(articles).toEqual([]);
+      });
+    });
+    test('ERROR - Status 404 - non-existent author in query', () => {
+      return request(app)
+      .get('/api/articles?author=not-an-author')
+      .expect(404)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Author not found');
+      });
+    });
     test('QUERY -filters the articles by topic', () => {
       return request(app)
       .get('/api/articles?topic=mitch')
@@ -249,12 +265,20 @@ describe('/api', () => {
         expect(articles[0].topic).toBe('mitch');
       });
     });
+    test('QUERY - topic exists, but has no articles', () => {
+      return request(app)
+      .get('/api/articles?topic=paper')
+      .expect(200)
+      .then(({ body: {articles}}) => {
+        expect(articles).toEqual([]);
+      });
+    });
     test('ERROR - Status 404 - non-existent topic in query', () => {
       return request(app)
       .get('/api/articles?topic=not-a-topic')
       .expect(404)
       .then(({body: {msg}}) => {
-        expect(msg).toBe('Topic not found')
+        expect(msg).toBe('Topic not found');
       });
     });
     test('POST responds with the posted article', () => {
@@ -279,6 +303,24 @@ describe('/api', () => {
             created_at: expect.any(String)
           }
         );
+      });
+    });
+    test('ERROR- Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .post('/api/articles')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .post('/api/articles')
+      .send({ article_rating: 10 })
+      .expect(400)
+      .then(({ body: {msg} }) => {
+        expect(msg).toBe('Bad request');
       });
     });
     test('INVALID METHODS - status:405', () => {
@@ -313,6 +355,34 @@ describe('/api', () => {
         expect(article.comment_count).toBe("13");
       });
     });
+    test('ERROR - Status 404 - article that does not exist', () => {
+      return request(app)
+      .get('/api/articles/999')
+      .expect(404)
+      .then(({body: {msg} }) => {
+        expect(msg).toBe('Article not found');
+      });
+    });
+    test('ERROR - Status 400 - invalid ID', () => {
+      return request(app)
+      .get('/api/articles/notAnId')
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
+    test('INVALID METHODS - status:405', () => {
+      const invalidMethods = ['put'];
+      const methodPromises = invalidMethods.map((method) => {
+        return request(app)
+          [method]('/api/articles/1')
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Method not allowed');
+          });
+      });
+      return Promise.all(methodPromises);
+    });
     test('DELETE responds with status 204 and no content', () => {
       return request(app)
       .delete('/api/articles/2')
@@ -335,25 +405,21 @@ describe('/api', () => {
         expect(articles).toHaveLength(0);
       });
     });
-    test('GET - article that does not exist, status: 404 not found', () => {
+    test('ERROR - Status 404 - article that does not exist', () => {
       return request(app)
-      .get('/api/articles/999')
+      .delete('/api/articles/999')
       .expect(404)
       .then(({body: {msg} }) => {
-        expect(msg).toBe('Article not found');
+        expect(msg).toBe('Article_id not found');
       });
     });
-    test('INVALID METHODS - status:405', () => {
-      const invalidMethods = ['put'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)
-          [method]('/api/articles/1')
-          .expect(405)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Method not allowed');
-          });
+    test('ERROR - Status 400 - invalid ID', () => {
+      return request(app)
+      .delete('/api/articles/notAnId')
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
       });
-      return Promise.all(methodPromises);
     });
     test('PATCH responds with the updated article', () => {
       return request(app)
@@ -375,6 +441,24 @@ describe('/api', () => {
         );
       });
     });
+    test('ERROR - Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .patch('/api/articles/1')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request - inc_votes required');
+      });
+    });
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .patch('/api/articles/1')
+      .send({ inc_votes: 'word' })
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
     test('POST responds with the posted comment', () => {
       return request(app)
       .post('/api/articles/9/comments')
@@ -391,6 +475,24 @@ describe('/api', () => {
             created_at: expect.any(String)
           }
         );
+      });
+    });
+    test('ERROR- Status 400 - malformed body/missing required fields', () => {
+      return request(app)
+      .post('/api/articles/9/comments')
+      .send({})
+      .expect(400)
+      .then(({ body: {msg}}) => {
+        expect(msg).toBe('Bad request');
+      });
+    });
+    test('ERROR - Status 400 - failing schema validation', () => {
+      return request(app)
+      .post('/api/articles/9/comments')
+      .send({ article_rating: 10 })
+      .expect(400)
+      .then(({ body: {msg} }) => {
+        expect(msg).toBe('Bad request');
       });
     });
     test('GET responds with an array of comments for the given article', () => {

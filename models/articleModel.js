@@ -1,4 +1,5 @@
 const { dbConnection } = require('../db/dbConnection');
+
 exports.totalArticleNumber = ({ author = null, topic = null }) => {
   let query = dbConnection
   .count("articles.article_id")
@@ -68,6 +69,9 @@ exports.fetchArticleById = (article_id) => {
 };
 
 exports.updateArticleById = (article_id, inc_votes) => {
+  if (!inc_votes) {
+    return Promise.reject({ status: 400, msg: "Bad request - inc_votes required"})
+  };
   return dbConnection
   .from("articles")
   .where("article_id", article_id)

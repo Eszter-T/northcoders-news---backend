@@ -27,3 +27,18 @@ exports.writeUser = (username, name, avatar_url) => {
 exports.fetchUsers = () => {
   return dbConnection.select("*").from("users");
 };
+
+exports.checkAuthorExists = ({ author = null}) => {
+  if (author == null) {
+    return Promise.resolve();
+  };
+  return dbConnection
+  .select("*")
+  .from("users")
+  .where("username", author)
+  .then(([user]) => {
+    if (user === undefined) {
+      return Promise.reject({ status: 404, msg: "Author not found"});
+    };
+  });
+};
