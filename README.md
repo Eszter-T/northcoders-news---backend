@@ -5,6 +5,28 @@ Here is a link to the hosted version of the API: https://nc-news-eszter.herokuap
 ## The Project
 Northcoders News API aims to mimick a real world backend service, such as reddit. It was built using Node.js and has a PSQL database. Knex.js was used to interact with the database and build queries. The API was built using Express. Test Driven Development was utilised throughout the project, using Jest and SuperTest.
 
+The data is divided into four groups: topics, articles, users and comments. These are stored in separate tables and are accessed through their own controller and model components.
+
+Northcoders News is a RESTful API with the following endpoints available:
+- GET /api
+- GET /api/topics
+- GET /api/users
+- GET /api/users/:username
+- GET /api/articles
+- GET /api/articles/:article_id
+- GET /api/artciles/:article_id/comments
+
+- PATCH /api/articles/article_id
+- PATCH /api/comments/:comment_id
+
+- POST /api/topics
+- POST /api/users
+- POST /api/articles
+- POST /api/articles/:article_id/comments
+
+- DELETE /api/articles/:article_id
+- DELETE /api/comments/:comment_id
+
 ## Instructions
 To clone the project run `git clone git@github.com:Eszter-T/be-nc-news.git` in your terminal. After opening the project with Visual Studio Code run `npm install` to install the project's dependencies. To seed you local database run `npm seed:prod`. Tests can be run with the command `npm test`.
 Knexfile...
