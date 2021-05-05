@@ -27,6 +27,20 @@ Northcoders News is a RESTful API with the following endpoints available:
 - DELETE /api/articles/:article_id
 - DELETE /api/comments/:comment_id
 
+GET /api/articles endpoint accepts queries:
+- sort_by: sorts the articles by any valid column (defaults to date)
+- order: ascending or descending (default)
+- limit: limits the number of responses (defaults to 10)
+- p (page): specifies the page at which to start
+- author: filters the articles by the username specified in the query
+- topic: filters the articles by the topic specified in the query
+
+GET /api/articles/:article_id/comments endpoint accepts queries:
+- sort_by
+- order
+- limit
+- p
+
 ## Instructions
 To clone the project run `git clone git@github.com:Eszter-T/be-nc-news.git` in your terminal. After opening the project with Visual Studio Code run `npm install` to install the project's dependencies. To seed you local database run `npm seed:prod`. Tests can be run with the command `npm test`.
 Knexfile...
