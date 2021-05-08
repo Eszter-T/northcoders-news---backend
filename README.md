@@ -42,13 +42,25 @@ GET /api/articles/:article_id/comments endpoint accepts queries:
 - p
 
 ## Instructions
-To clone the project run `git clone git@github.com:Eszter-T/be-nc-news.git` in your terminal. After opening the project with Visual Studio Code run `npm install` to install the project's dependencies. To seed you local database run `npm seed:prod`. Tests can be run with the command `npm test`.
+
+- Clone the project: run `git clone git@github.com:Eszter-T/be-nc-news.git` in your terminal. 
+- npm install: After opening the project with Visual Studio Code run `npm install` to install the project's dependencies. 
+- Seed the database: To seed you local database run `npm seed:prod`. 
+- Tests can be run with the command `npm test`.
+
+These are the minimum versions needed to run the project:
+- Node.js: v15.5.1
+- Postgres: ^8.5.1
+- Express: ^4.17.1
+- Knex: ^0.95.1
+- Jest: ^26.6.3
+- SuperTest: ^6.1.3
 
 To run the project, a knexfile.js (which contains all of the configuration for the database) is needed. The knexfile should be added to the .gitignore as it contains your postgres username and password (for linux users only). For more information please visit: http://knexjs.org/#knexfile.
 
 Here is an example:
 
-```json
+```js
 const { DB_URL } = process.env;
 const ENV = process.env.NODE_ENV || "development";
 const baseConfig = {
@@ -89,10 +101,3 @@ const customConfig = {
 module.exports = { ...customConfig[ENV], ...baseConfig };
 ```
 
-These are the minimum versions needed to run the project:
-- Node.js: v15.5.1
-- Postgres: ^8.5.1
-- Express: ^4.17.1
-- Knex: ^0.95.1
-- Jest: ^26.6.3
-- SuperTest: ^6.1.3
