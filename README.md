@@ -3,7 +3,7 @@
 Here is a link to the hosted version of the API: https://nc-news-eszter.herokuapp.com/api.
 
 ## The Project
-Northcoders News API aims to mimick a real world backend service, such as reddit. It was built using Node.js and has a PSQL database. Knex.js was used to interact with the database and build queries. The API was built using Express. Test Driven Development was utilised throughout the project, using Jest and SuperTest.
+Northcoders News API aims to simulate a real world backend service, such as reddit. It was built using Node.js and has a PSQL database. Knex.js was used to interact with the database and build queries. The API was built using Express. Test Driven Development was utilised throughout the project, using Jest and SuperTest.
 
 The data is divided into four groups: topics, articles, users and comments. These are stored in separate tables and are accessed through their own controller and model components.
 
