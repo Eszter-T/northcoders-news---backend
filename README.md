@@ -43,7 +43,7 @@ GET /api/articles/:article_id/comments endpoint accepts queries:
 
 ## Instructions
 
-- Clone the project: run `git@github.com:Eszter-T/northcoders-news---backend.git` in your terminal. 
+- Clone the project: run `git clone git@github.com:Eszter-T/northcoders-news---backend.git` in your terminal. 
 - npm install: After opening the project with Visual Studio Code run `npm install` to install the project's dependencies. 
 - Seed the database: To seed you local database run `npm seed:prod`. 
 - Tests can be run with the command `npm test`.
